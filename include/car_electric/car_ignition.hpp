@@ -33,7 +33,7 @@ enum class PowerState {
 
 class Ignition {
 public:
-	bool init();
+	bool init();				// Initializing
 	bool off();					// No power detected.
 	bool shortage();			// To little power to run.
 	bool pwr_on();				// Key is twisted at position two.
