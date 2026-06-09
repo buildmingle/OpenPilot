@@ -20,6 +20,7 @@
 
 #pragma once
 
+#include <string>
 #include "../autopilot/system.hpp"
 
 enum class CheckStatus {
@@ -38,4 +39,18 @@ enum class CheckLevel {
     INFO,
     WARNING,
     CRITICAL
+};
+
+class Check {
+public:
+    Check(CheckType type, CheckLevel level, const std::string& message)
+        : type_(type), level_(level), message_(message) {}
+
+    CheckType type() const { return type_; }
+    CheckLevel level() const { return level_; }
+    const std::string& message() const { return message_; }
+private:
+    CheckType type_;
+    CheckLevel level_;
+    std::string message_;
 };
