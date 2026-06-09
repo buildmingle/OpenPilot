@@ -33,7 +33,7 @@ enum class PowerState {
 
 class Ignition {
 public:
-	bool init();				// Initializing
+	bool init();				// Initializing.
 	bool off();					// No power detected.
 	bool shortage();			// To little power to run.
 	bool pwr_on();				// Key is twisted at position two.
@@ -43,6 +43,7 @@ public:
 	PowerState state() const;
 
 private:
+	// Default state is OFF
 	PowerState current_state = PowerState::OFF;
 	void set_state(PowerState new_state);
 };
