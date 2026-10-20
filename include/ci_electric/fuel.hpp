@@ -91,6 +91,7 @@ public:
 
     bool check_fuel_system() {
         // Check fuel system components and return true if they are functioning properly
+        // TODO: Do this before anything else.
         return true;
     }
 
