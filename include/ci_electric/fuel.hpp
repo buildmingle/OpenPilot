@@ -35,6 +35,8 @@ enum class FuelLevel {
     LOW,
     HALF,
     FULL
+    // TODO: Add calibrating; not a real value
+    // but is needed.
 };
 
 enum class FuelAlertLevel {
