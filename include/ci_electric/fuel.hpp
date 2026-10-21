@@ -59,9 +59,34 @@ enum class FuelEvent {
 
 class Fuel {
 public:
+    Fuel(ci_electric::CiElectric& gpio,
+         ci_electric::Pin pump_status_pin,
+         ci_electric::Pin filter_status_pin,
+         ci_electric::Pin injector_status_pin)
+        : gpio_(gpio),
+          pump_status_pin_(pump_status_pin),
+          filter_status_pin_(filter_status_pin),
+          injector_status_pin_(injector_status_pin) {}
+
     bool initialize() {
         level_ = FuelLevel::CALIBRATING;
         type_ = FuelType::GASOLINE;
+        initialized_ = false;
+
+        if (pump_status_pin_.id() == filter_status_pin_.id() ||
+            pump_status_pin_.id() == injector_status_pin_.id() ||
+            filter_status_pin_.id() == injector_status_pin_.id()) {
+            return false;
+        }
+
+        if (!gpio_.init() ||
+            !gpio_.pin_mode(pump_status_pin_, ci_electric::PinMode::INPUT) ||
+            !gpio_.pin_mode(filter_status_pin_, ci_electric::PinMode::INPUT) ||
+            !gpio_.pin_mode(injector_status_pin_, ci_electric::PinMode::INPUT)) {
+            return false;
+        }
+
+        initialized_ = true;
         return true;
     }
 
@@ -94,12 +119,22 @@ public:
     }
 
     bool check_fuel_system() {
-        // Check fuel system components and return true if they are functioning properly
-        // TODO: Do this before anything else.
-        return true;
+        if (!initialized_) {
+            return false;
+        }
+
+        // Each status input is HIGH when its component is functioning properly.
+        return gpio_.digital_read(pump_status_pin_) == ci_electric::PowerStatus::HIGH &&
+               gpio_.digital_read(filter_status_pin_) == ci_electric::PowerStatus::HIGH &&
+               gpio_.digital_read(injector_status_pin_) == ci_electric::PowerStatus::HIGH;
     }
 
 private:
+    ci_electric::CiElectric& gpio_;
+    ci_electric::Pin pump_status_pin_;
+    ci_electric::Pin filter_status_pin_;
+    ci_electric::Pin injector_status_pin_;
     FuelLevel level_;
     FuelType type_;
+    bool initialized_ = false;
 };
