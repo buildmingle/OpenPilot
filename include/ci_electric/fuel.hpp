@@ -124,9 +124,24 @@ public:
         }
 
         // Each status input is HIGH when its component is functioning properly.
-        return gpio_.digital_read(pump_status_pin_) == ci_electric::PowerStatus::HIGH &&
-               gpio_.digital_read(filter_status_pin_) == ci_electric::PowerStatus::HIGH &&
-               gpio_.digital_read(injector_status_pin_) == ci_electric::PowerStatus::HIGH;
+        const bool pump_ok =
+            gpio_.digital_read(pump_status_pin_) == ci_electric::PowerStatus::HIGH;
+        const bool filter_ok =
+            gpio_.digital_read(filter_status_pin_) == ci_electric::PowerStatus::HIGH;
+        const bool injector_ok =
+            gpio_.digital_read(injector_status_pin_) == ci_electric::PowerStatus::HIGH;
+
+        if (!pump_ok) {
+            trigger_event(FuelEvent::FUEL_PUMP_FAILURE);
+        }
+        if (!filter_ok) {
+            trigger_event(FuelEvent::FUEL_FILTER_CLOGGED);
+        }
+        if (!injector_ok) {
+            trigger_event(FuelEvent::FUEL_INJECTOR_FAILURE);
+        }
+
+        return pump_ok && filter_ok && injector_ok;
     }
 
 private:
