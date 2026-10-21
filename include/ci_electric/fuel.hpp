@@ -34,9 +34,8 @@ enum class FuelLevel {
     EMPTY,
     LOW,
     HALF,
-    FULL
-    // TODO: Add calibrating; not a real value
-    // but is needed.
+    FULL,
+    CALIBRATING
 };
 
 enum class FuelAlertLevel {
@@ -61,7 +60,7 @@ enum class FuelEvent {
 class Fuel {
 public:
     bool initialize() {
-        level_ = FuelLevel::FULL;
+        level_ = FuelLevel::CALIBRATING;
         type_ = FuelType::GASOLINE;
         return true;
     }
