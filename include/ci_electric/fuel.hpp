@@ -21,6 +21,7 @@
 #pragma once
 
 #include "check.hpp"
+#include "dashboard.hpp"
 #include "power.hpp"
 
 enum class FuelType {
@@ -62,11 +63,15 @@ public:
     Fuel(ci_electric::CiElectric& gpio,
          ci_electric::Pin pump_status_pin,
          ci_electric::Pin filter_status_pin,
-         ci_electric::Pin injector_status_pin)
+         ci_electric::Pin injector_status_pin,
+         ci_electric::Pin fuel_low_pin,
+         Dashboard& dashboard)
         : gpio_(gpio),
           pump_status_pin_(pump_status_pin),
           filter_status_pin_(filter_status_pin),
-          injector_status_pin_(injector_status_pin) {}
+          injector_status_pin_(injector_status_pin),
+          fuel_low_pin_(fuel_low_pin),
+          dashboard_(dashboard) {}
 
     bool initialize() {
         level_ = FuelLevel::CALIBRATING;
@@ -75,14 +80,18 @@ public:
 
         if (pump_status_pin_.id() == filter_status_pin_.id() ||
             pump_status_pin_.id() == injector_status_pin_.id() ||
-            filter_status_pin_.id() == injector_status_pin_.id()) {
+            pump_status_pin_.id() == fuel_low_pin_.id() ||
+            filter_status_pin_.id() == injector_status_pin_.id() ||
+            filter_status_pin_.id() == fuel_low_pin_.id() ||
+            injector_status_pin_.id() == fuel_low_pin_.id()) {
             return false;
         }
 
         if (!gpio_.init() ||
             !gpio_.pin_mode(pump_status_pin_, ci_electric::PinMode::INPUT) ||
             !gpio_.pin_mode(filter_status_pin_, ci_electric::PinMode::INPUT) ||
-            !gpio_.pin_mode(injector_status_pin_, ci_electric::PinMode::INPUT)) {
+            !gpio_.pin_mode(injector_status_pin_, ci_electric::PinMode::INPUT) ||
+            !gpio_.pin_mode(fuel_low_pin_, ci_electric::PinMode::INPUT)) {
             return false;
         }
 
@@ -99,8 +108,34 @@ public:
     }
 
     bool fuel_alert(FuelAlertType type, FuelAlertLevel level, const std::string& message) {
-        // Handle fuel alerts based on type and level
-        return true;
+        DashboardAlertType dashboard_type;
+        switch (type) {
+            case FuelAlertType::LOW_FUEL:
+                dashboard_type = DashboardAlertType::SENSOR;
+                break;
+            case FuelAlertType::FUEL_LEAK:
+            case FuelAlertType::FUEL_SYSTEM_FAILURE:
+                dashboard_type = DashboardAlertType::SYSTEM;
+                break;
+        }
+
+        DashboardAlertLevel dashboard_level;
+        switch (level) {
+            case FuelAlertLevel::INFO:
+                dashboard_level = DashboardAlertLevel::INFO;
+                break;
+            case FuelAlertLevel::WARNING:
+                dashboard_level = DashboardAlertLevel::WARNING;
+                break;
+            case FuelAlertLevel::CRITICAL:
+                dashboard_level = DashboardAlertLevel::CRITICAL;
+                break;
+        }
+
+        const bool alert_sent =
+            dashboard_.dashboard_alert(dashboard_type, dashboard_level, message);
+        const bool light_set = dashboard_.set_light(DashboardLights::FUEL, true);
+        return alert_sent && light_set;
     }
 
     bool trigger_event(FuelEvent event) {
@@ -114,8 +149,22 @@ public:
     }
 
     bool check_fuel_level() {
-        // Check fuel level and return true if it's above a certain threshold
-        return true;
+        if (!initialized_) {
+            return false;
+        }
+
+        // The low-fuel switch reads HIGH when fuel is below the warning threshold.
+        const bool fuel_is_low =
+            gpio_.digital_read(fuel_low_pin_) == ci_electric::PowerStatus::HIGH;
+        if (fuel_is_low) {
+            level_ = FuelLevel::LOW;
+            fuel_alert(FuelAlertType::LOW_FUEL, FuelAlertLevel::WARNING,
+                       "Fuel level is low.");
+            return false;
+        }
+
+        const bool light_cleared = dashboard_.clear_light(DashboardLights::FUEL);
+        return light_cleared;
     }
 
     bool check_fuel_system() {
@@ -149,6 +198,8 @@ private:
     ci_electric::Pin pump_status_pin_;
     ci_electric::Pin filter_status_pin_;
     ci_electric::Pin injector_status_pin_;
+    ci_electric::Pin fuel_low_pin_;
+    Dashboard& dashboard_;
     FuelLevel level_;
     FuelType type_;
     bool initialized_ = false;
