@@ -24,6 +24,8 @@
 
 bool Dashboard::initialize() {
     // Initialize dashboard components
+    // Startup simply shows animation or
+    // boot.
     status_ = DashboardStatus::STARTUP;
     return true;
 }
