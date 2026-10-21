@@ -34,6 +34,7 @@ add_executable(OpenPilot
     src/navigation.cpp
     src/car_electric/ignition.cpp
     src/ci_electric/dashboard.cpp
+    src/ci_electric/fuel.cpp
     src/ci_electric/power.cpp
     src/lua_engine.cpp
 )
