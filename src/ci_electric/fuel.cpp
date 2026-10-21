@@ -60,6 +60,7 @@ bool Fuel::initialize() {
 }
 
 bool Fuel::update() {
+    // TODO: Add Diesel, ...
     if (type_ != FuelType::GASOLINE) {
         return true;
     }
