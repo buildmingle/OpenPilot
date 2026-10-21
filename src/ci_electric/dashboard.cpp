@@ -30,6 +30,7 @@ bool Dashboard::initialize() {
     return true;
 }
 
+// The initial update; after initialize.
 bool Dashboard::update() {
     status_ = DashboardStatus::OK;
     return true;
