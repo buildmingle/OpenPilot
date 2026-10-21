@@ -67,6 +67,9 @@ public:
 
     bool update() {
         // Update fuel status based on checks and sensor data
+        if (type_ == FuelType::GASOLINE) {
+            return check_fuel_level() && check_fuel_system();
+        }
         return true;
     }
 
