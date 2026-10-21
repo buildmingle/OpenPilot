@@ -77,6 +77,9 @@ bool Fuel::fuel_alert(FuelAlertType type, FuelAlertLevel level, const std::strin
         case FuelAlertType::FUEL_SYSTEM_FAILURE:
             dashboard_type = DashboardAlertType::SYSTEM;
             break;
+            // We should notify the user, that the 
+            // loop is broken - and that continuing is
+            // not the best option.
         default:
             return false;
     }
