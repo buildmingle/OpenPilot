@@ -117,6 +117,8 @@ public:
             case FuelAlertType::FUEL_SYSTEM_FAILURE:
                 dashboard_type = DashboardAlertType::SYSTEM;
                 break;
+            default:
+                return false;
         }
 
         DashboardAlertLevel dashboard_level;
@@ -130,6 +132,8 @@ public:
             case FuelAlertLevel::CRITICAL:
                 dashboard_level = DashboardAlertLevel::CRITICAL;
                 break;
+            default:
+                return false;
         }
 
         const bool alert_sent =
