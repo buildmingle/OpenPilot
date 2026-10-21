@@ -49,7 +49,8 @@ bool CiElectric::digital_write(const Pin& pin, PowerStatus value) {
 PowerStatus CiElectric::digital_read(const Pin& pin) const {
     if (pin.mode() != PinMode::INPUT) {
         // In real systems you might assert or throw
-        return PowerStatus::LOW;
+        throw PowerStatus::LOW;
+        // return PowerStatus::LOW;
     }
 
     return read_hardware_pin(pin.id());
